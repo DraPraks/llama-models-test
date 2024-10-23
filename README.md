@@ -47,9 +47,12 @@ If you want older versions of models, run `llama model list --show-all` to show 
 Remember that the links expire after 24 hours and a certain amount of downloads. You can always re-request a link if you start seeing errors such as `403: Forbidden`.
 
 ## Running the models
-
-You need to install the following dependencies (in addition to the `requirements.txt` in the root directory of this repository) to run the models:
+run:
+```bash
+pip install -r requirements.txt
 ```
+You need to install the following dependencies (in addition to the `requirements.txt` in the root directory of this repository) to run the models:
+```bash
 pip install torch fairscale fire blobfile
 ```
 
@@ -58,7 +61,7 @@ After installing the dependencies, you can run the example scripts (within `mode
 #!/bin/bash
 
 CHECKPOINT_DIR=~/.llama/checkpoints/Meta-Llama3.1-8B-Instruct
-PYTHONPATH=$(git rev-parse --show-toplevel) torchrun models/scripts/example_chat_completion.py $CHECKPOINT_DIR
+PYTHONPATH=$(git rev-parse --show-toplevel) torchrun models/scripts/example_chat_completion.py $"C:/Users/prako/.llama/checkpoints/Llama3.1-8B"
 ```
 
 The above script should be used with an Instruct (Chat) model. For a Base model, use the script `models/scripts/example_text_completion.py`. Note that you can use these scripts with both Llama3 and Llama3.1 series of models.

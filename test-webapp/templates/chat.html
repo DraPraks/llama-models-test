@@ -1,0 +1,68 @@
+<!doctype html>
+<html>
+<head>
+    <title>Indonesian Math Tutor</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 40px;
+            background-color: #f4f4f4;
+        }
+        .chat-box {
+            background: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            max-width: 800px;
+            margin: auto;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .message {
+            margin-bottom: 15px;
+        }
+        .user {
+            text-align: right;
+        }
+        .assistant {
+            text-align: left;
+        }
+        textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            resize: vertical;
+        }
+        .btn {
+            padding: 10px 20px;
+            background: #007BFF;
+            border: none;
+            color: #fff;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .btn-reset {
+            background: #dc3545;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-box">
+        <h1>Tutor Matematika Jaksel</h1>
+        <div>
+            {% for msg in dialog %}
+                <div class="message {% if msg.role == 'user' %}user{% elif msg.role == 'assistant' %}assistant{% endif %}">
+                    <strong>{{ msg.role.capitalize() }}:</strong> {{ msg.content }}
+                </div>
+            {% endfor %}
+        </div>
+        <form method="post">
+            <textarea name="user_input" rows="3" placeholder="Tulis pertanyaan matematika kamu di sini..."></textarea><br>
+            <input type="submit" value="Kirim" class="btn">
+        </form>
+        <form method="post" action="/reset">
+            <input type="submit" value="Reset Chat" class="btn btn-reset">
+        </form>
+    </div>
+</body>
+</html>

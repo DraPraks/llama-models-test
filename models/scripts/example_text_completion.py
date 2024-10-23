@@ -16,43 +16,86 @@ from termcolor import cprint
 from models.llama3.reference_impl.generation import Llama
 
 
+import os
+
 def run_main(
-    ckpt_dir: str,
     temperature: float = 0.6,
     top_p: float = 0.9,
     max_seq_len: int = 512,
     max_batch_size: int = 4,
-    max_gen_len: int = 64,
-    model_parallel_size: Optional[int] = None,
+    max_gen_len: Optional[int] = None,
+    model_parallel_size: Optional[int] = 1,  # Ensure default is 1
 ):
+    """
+    Examples to run with the models finetuned for chat. Prompts correspond to chat
+    turns between the user and assistant with the final one always being the user.
+
+    An optional system prompt at the beginning to control how the model should respond
+    is also supported.
+
+    `max_gen_len` is optional because finetuned models are able to stop generations naturally.
+    """
+    # **Set Environment Variables for Torch Distributed**
+    os.environ["RANK"] = "0"
+    os.environ["WORLD_SIZE"] = "1"
+    os.environ["MASTER_ADDR"] = "localhost"
+    os.environ["MASTER_PORT"] = "29500"  # You can choose any free port
+    os.environ["TORCH_DISTRIBUTED_INIT_METHOD"] = "tcp://localhost:29500"  # Explicitly set init_method to TCP
+
+    # Hardcode the checkpoint directory here
+    ckpt_dir = r"C:\Users\prako\.llama\checkpoints\Llama3.1-8B"
+
     generator = Llama.build(
         ckpt_dir=ckpt_dir,
         max_seq_len=max_seq_len,
         max_batch_size=max_batch_size,
-        model_parallel_size=model_parallel_size,
+        model_parallel_size=model_parallel_size,  # Pass the adjusted value
     )
 
-    prompts = [
-        "The color of the sky is blue but sometimes it can also be",
-        """\
-apple is pomme,
-bannana is banane,
-cherry is""",
-        "1, 2, 3, 5, 8, 13",
-        "ba ba black sheep, have you any wool?",
+
+    dialogs = [
+        [UserMessage(content="what is the recipe of mayonnaise?")],
+        [
+            UserMessage(content="I am going to Paris, what should I see?"),
+            CompletionMessage(
+                content="""\
+Paris, the capital of France, is known for its stunning architecture, art museums, historical landmarks, and romantic atmosphere. Here are some of the top attractions to see in Paris:
+
+1. The Eiffel Tower: The iconic Eiffel Tower is one of the most recognizable landmarks in the world and offers breathtaking views of the city.
+2. The Louvre Museum: The Louvre is one of the world's largest and most famous museums, housing an impressive collection of art and artifacts, including the Mona Lisa.
+3. Notre-Dame Cathedral: This beautiful cathedral is one of the most famous landmarks in Paris and is known for its Gothic architecture and stunning stained glass windows.
+
+These are just a few of the many attractions that Paris has to offer. With so much to see and do, it's no wonder that Paris is one of the most popular tourist destinations in the world.""",
+                stop_reason=StopReason.end_of_turn,
+            ),
+            UserMessage(content="What is so great about #1?"),
+        ],
+        [
+            SystemMessage(content="Always answer with Haiku"),
+            UserMessage(content="I am going to Paris, what should I see?"),
+        ],
+        [
+            SystemMessage(
+                content="Always answer with emojis",
+            ),
+            UserMessage(content="How to go from Beijing to NY?"),
+        ],
     ]
-    for prompt in prompts:
-        result = generator.text_completion(
-            prompt,
-            temperature=0.6,
-            top_p=0.9,
+    for dialog in dialogs:
+        result = generator.chat_completion(
+            dialog,
             max_gen_len=max_gen_len,
-            logprobs=False,
+            temperature=temperature,
+            top_p=top_p,
         )
 
-        cprint(f"{prompt}", end="")
-        cprint(f"{result.generation}", color="yellow")
+        for msg in dialog:
+            print(f"{msg.role.capitalize()}: {msg.content}\n")
+
+        out_message = result.generation
+        print(f"> {out_message.role.capitalize()}: {out_message.content}")
         print("\n==================================\n")
+
 
 
 def main():

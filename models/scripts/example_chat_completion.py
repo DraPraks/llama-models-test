@@ -1,16 +1,9 @@
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# All rights reserved.
-#
-# This source code is licensed under the terms described in the LICENSE file in
-# top-level folder for each specific model found within the models/ directory at
-# the top-level of this source tree.
-
-# Copyright (c) Meta Platforms, Inc. and affiliates.
-# This software may be used and distributed in accordance with the terms of the Llama 3 Community License Agreement.
+# example_chat_completion.py
 
 from typing import Optional
 
 import fire
+from termcolor import cprint
 
 from models.llama3.api.datatypes import (
     CompletionMessage,
@@ -23,16 +16,15 @@ from models.llama3.reference_impl.generation import Llama
 
 
 def run_main(
-    ckpt_dir: str,
     temperature: float = 0.6,
     top_p: float = 0.9,
     max_seq_len: int = 512,
     max_batch_size: int = 4,
     max_gen_len: Optional[int] = None,
-    model_parallel_size: Optional[int] = None,
+    model_parallel_size: Optional[int] = 1,  # Set default to 1
 ):
     """
-    Examples to run with the models finetuned for chat. Prompts correspond of chat
+    Examples to run with the models finetuned for chat. Prompts correspond to chat
     turns between the user and assistant with the final one always being the user.
 
     An optional system prompt at the beginning to control how the model should respond
@@ -40,11 +32,14 @@ def run_main(
 
     `max_gen_len` is optional because finetuned models are able to stop generations naturally.
     """
+    # Hardcode the checkpoint directory here
+    ckpt_dir = r"C:\Users\prako\.llama\checkpoints\Llama3.1-8B"
+
     generator = Llama.build(
         ckpt_dir=ckpt_dir,
         max_seq_len=max_seq_len,
         max_batch_size=max_batch_size,
-        model_parallel_size=model_parallel_size,
+        model_parallel_size=model_parallel_size,  # Pass the adjusted value
     )
 
     dialogs = [
